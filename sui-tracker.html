@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUI Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c14;
+    --card: #0d1220;
+    --border: #1a2540;
+    --sui: #4da2ff;
+    --sui-glow: rgba(77, 162, 255, 0.15);
+    --green: #00e5a0;
+    --red: #ff4d6a;
+    --muted: #4a5a7a;
+    --text: #e8edf8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(77,162,255,0.08) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 30% at 80% 80%, rgba(77,162,255,0.04) 0%, transparent 60%);
+  }
+
+  .tracker {
+    width: 100%;
+    max-width: 460px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .sui-icon {
+    width: 36px; height: 36px;
+    background: var(--sui);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    box-shadow: 0 0 16px rgba(77,162,255,0.4);
+  }
+
+  .coin-name {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #fff;
+  }
+
+  .coin-name span { color: var(--sui); }
+
+  .live-badge {
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--green);
+    letter-spacing: 1px;
+  }
+
+  .pulse {
+    width: 7px; height: 7px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0,229,160,0.5); }
+    50% { opacity: 0.7; box-shadow: 0 0 0 5px rgba(0,229,160,0); }
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+  }
+
+  .card-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  /* PRICE CARD */
+  .price-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .price-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 36px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -1px;
+    transition: color 0.3s;
+  }
+
+  .price-value.flash-up { color: var(--green); }
+  .price-value.flash-down { color: var(--red); }
+
+  .change-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    transition: all 0.3s;
+  }
+
+  .change-badge.positive { background: rgba(0,229,160,0.12); color: var(--green); }
+  .change-badge.negative { background: rgba(255,77,106,0.12); color: var(--red); }
+  .change-badge.neutral  { background: rgba(74,90,122,0.2); color: var(--muted); }
+
+  .arrow { font-size: 16px; }
+
+  /* INPUT CARD */
+  .input-group {
+    margin-bottom: 14px;
+  }
+
+  .input-group:last-child { margin-bottom: 0; }
+
+  .input-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 7px;
+    display: block;
+  }
+
+  .input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .input-prefix {
+    position: absolute;
+    left: 13px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  input[type="number"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 11px 13px 11px 30px;
+    font-family: 'Space Mono', monospace;
+    font-size: 15px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input[type="number"]:focus {
+    border-color: var(--sui);
+    box-shadow: 0 0 0 3px rgba(77,162,255,0.1);
+  }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  /* STATS GRID */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+  }
+
+  .stat-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin-top: 4px;
+    transition: color 0.3s;
+  }
+
+  .stat-value.green { color: var(--green); }
+  .stat-value.red   { color: var(--red); }
+
+  /* DIVIDER */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 10px 0;
+  }
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+  }
+
+  .row-label {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .row-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  /* LAST UPDATED */
+  .footer {
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    padding-top: 4px;
+    letter-spacing: 0.5px;
+  }
+
+  .error-msg {
+    text-align: center;
+    font-size: 11px;
+    color: var(--red);
+    font-family: 'Space Mono', monospace;
+    padding: 4px;
+  }
+</style>
+</head>
+<body>
+<div class="tracker">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">
+      <div class="sui-icon">SUI</div>
+      <div class="coin-name">SUI<span>/USD</span></div>
+    </div>
+    <div class="live-badge">
+      <div class="pulse"></div>
+      LIVE
+    </div>
+  </div>
+
+  <!-- LIVE PRICE -->
+  <div class="card price-card">
+    <div>
+      <div class="card-label">Current Price</div>
+      <div class="price-value" id="price">—</div>
+    </div>
+    <div class="change-badge neutral" id="change-badge">
+      <span class="arrow" id="change-arrow">—</span>
+      <span id="change-pct">0.00%</span>
+    </div>
+  </div>
+
+  <!-- INPUT -->
+  <div class="card">
+    <div class="card-label">Your Investment</div>
+    <div class="input-group">
+      <label class="input-label" for="amount-usd">Amount Invested (USD)</label>
+      <div class="input-wrap">
+        <span class="input-prefix">$</span>
+        <input type="number" id="amount-usd" placeholder="0.00" min="0" step="0.01" oninput="recalc()">
+      </div>
+    </div>
+    <div class="input-group">
+      <label class="input-label" for="sui-amount">SUI Quantity Held</label>
+      <div class="input-wrap">
+        <span class="input-prefix" style="font-size:11px;color:#4da2ff">◈</span>
+        <input type="number" id="sui-amount" placeholder="0.00" min="0" step="0.01" oninput="recalc()">
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="card-label">Current Value</div>
+      <div class="stat-value" id="current-value">$0.00</div>
+    </div>
+    <div class="stat-card">
+      <div class="card-label">Profit / Loss</div>
+      <div class="stat-value" id="pnl">$0.00</div>
+    </div>
+  </div>
+
+  <!-- DETAILS -->
+  <div class="card">
+    <div class="card-label">Details</div>
+    <div class="row">
+      <span class="row-label">Invested</span>
+      <span class="row-value" id="d-invested">$0.00</span>
+    </div>
+    <hr class="divider">
+    <div class="row">
+      <span class="row-label">Current Value</span>
+      <span class="row-value" id="d-value">$0.00</span>
+    </div>
+    <hr class="divider">
+    <div class="row">
+      <span class="row-label">P&L %</span>
+      <span class="row-value" id="d-pnl-pct">0.00%</span>
+    </div>
+    <hr class="divider">
+    <div class="row">
+      <span class="row-label">SUI Quantity</span>
+      <span class="row-value" id="d-qty">0 SUI</span>
+    </div>
+    <hr class="divider">
+    <div class="row">
+      <span class="row-label">Avg Buy Price</span>
+      <span class="row-value" id="d-avg">$0.00</span>
+    </div>
+  </div>
+
+  <div class="error-msg" id="error-msg"></div>
+  <div class="footer" id="last-updated">Fetching price...</div>
+</div>
+
+<script>
+  let currentPrice = null;
+  let change24h = null;
+
+  async function fetchPrice() {
+    try {
+      const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=sui&vs_currencies=usd&include_24hr_change=true');
+      const data = await res.json();
+      const newPrice = data.sui.usd;
+      change24h = data.sui.usd_24h_change;
+
+      // Flash animation
+      const el = document.getElementById('price');
+      if (currentPrice !== null) {
+        el.classList.remove('flash-up','flash-down');
+        void el.offsetWidth;
+        el.classList.add(newPrice >= currentPrice ? 'flash-up' : 'flash-down');
+        setTimeout(() => el.classList.remove('flash-up','flash-down'), 600);
+      }
+
+      currentPrice = newPrice;
+      el.textContent = '$' + currentPrice.toFixed(4);
+
+      // 24h change badge
+      const badge = document.getElementById('change-badge');
+      const arrow = document.getElementById('change-arrow');
+      const pct   = document.getElementById('change-pct');
+      badge.className = 'change-badge ' + (change24h >= 0 ? 'positive' : 'negative');
+      arrow.textContent = change24h >= 0 ? '▲' : '▼';
+      pct.textContent   = Math.abs(change24h).toFixed(2) + '%';
+
+      document.getElementById('error-msg').textContent = '';
+      document.getElementById('last-updated').textContent =
+        'Updated ' + new Date().toLocaleTimeString();
+
+      recalc();
+    } catch(e) {
+      document.getElementById('error-msg').textContent = 'Could not fetch price. Retrying...';
+    }
+  }
+
+  function fmt(n) {
+    return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function recalc() {
+    const invested = parseFloat(document.getElementById('amount-usd').value) || 0;
+    const qty      = parseFloat(document.getElementById('sui-amount').value) || 0;
+    const price    = currentPrice || 0;
+
+    const currentVal = qty * price;
+    const pnl        = currentVal - invested;
+    const pnlPct     = invested > 0 ? (pnl / invested) * 100 : 0;
+    const avgBuy     = qty > 0 ? invested / qty : 0;
+
+    // Current value
+    document.getElementById('current-value').textContent = '$' + currentVal.toFixed(2);
+
+    // P&L
+    const pnlEl = document.getElementById('pnl');
+    pnlEl.textContent = (pnl >= 0 ? '+' : '-') + fmt(pnl);
+    pnlEl.className = 'stat-value ' + (pnl > 0 ? 'green' : pnl < 0 ? 'red' : '');
+
+    // Details
+    document.getElementById('d-invested').textContent = '$' + invested.toFixed(2);
+    document.getElementById('d-value').textContent    = '$' + currentVal.toFixed(2);
+    document.getElementById('d-pnl-pct').textContent  = (pnlPct >= 0 ? '+' : '') + pnlPct.toFixed(2) + '%';
+    document.getElementById('d-pnl-pct').style.color  = pnlPct > 0 ? 'var(--green)' : pnlPct < 0 ? 'var(--red)' : '';
+    document.getElementById('d-qty').textContent      = qty.toLocaleString() + ' SUI';
+    document.getElementById('d-avg').textContent      = '$' + avgBuy.toFixed(4);
+  }
+
+  fetchPrice();
+  setInterval(fetchPrice, 30000); // refresh every 30s
+</script>
+</body>
+</html>
