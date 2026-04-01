@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crypto Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c14;
+    --card: #0d1220;
+    --border: #1a2540;
+    --green: #00e5a0;
+    --red: #ff4d6a;
+    --muted: #4a5a7a;
+    --text: #e8edf8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    padding: 24px 16px 40px;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(77,162,255,0.07) 0%, transparent 70%);
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+
+  .subtitle {
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+  }
+
+  .pulse {
+    width: 7px; height: 7px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 1.6s ease-in-out infinite;
+    display: inline-block;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0,229,160,0.5); }
+    50% { opacity: 0.7; box-shadow: 0 0 0 5px rgba(0,229,160,0); }
+  }
+
+  .coins-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  /* COIN CARD */
+  .coin-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .coin-card:focus-within {
+    border-color: var(--accent);
+  }
+
+  /* TOP ROW */
+  .coin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .coin-identity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .coin-dot {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .coin-name-block .ticker {
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+
+  .coin-name-block .fullname {
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .price-block {
+    text-align: right;
+  }
+
+  .price-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    transition: color 0.3s;
+  }
+
+  .price-val.flash-up { color: var(--green); }
+  .price-val.flash-down { color: var(--red); }
+
+  .change-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    margin-top: 3px;
+  }
+
+  .change-pill.positive { background: rgba(0,229,160,0.12); color: var(--green); }
+  .change-pill.negative { background: rgba(255,77,106,0.12); color: var(--red); }
+  .change-pill.neutral  { background: rgba(74,90,122,0.2); color: var(--muted); }
+
+  /* INPUTS ROW */
+  .coin-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .input-cell {
+    padding: 10px 14px;
+  }
+
+  .input-cell:first-child {
+    border-right: 1px solid var(--border);
+  }
+
+  .input-cell label {
+    display: block;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+
+  .input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .input-prefix {
+    position: absolute;
+    left: 9px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  input[type="number"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 8px 8px 8px 22px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input[type="number"]:focus {
+    border-color: var(--accent, #4da2ff);
+    box-shadow: 0 0 0 2px rgba(77,162,255,0.08);
+  }
+
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+
+  /* STATS ROW */
+  .coin-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    padding: 10px 0 6px;
+  }
+
+  .stat {
+    padding: 4px 14px;
+    border-right: 1px solid var(--border);
+  }
+
+  .stat:last-child { border-right: none; }
+
+  .stat-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+
+  .stat-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    transition: color 0.3s;
+  }
+
+  .stat-val.green { color: var(--green); }
+  .stat-val.red   { color: var(--red); }
+
+  /* PORTFOLIO SUMMARY */
+  .summary {
+    max-width: 520px;
+    margin: 16px auto 0;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 20px;
+  }
+
+  .summary-title {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .sum-item { }
+
+  .sum-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .sum-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .sum-val.green { color: var(--green); }
+  .sum-val.red   { color: var(--red); }
+
+  .footer {
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    padding-top: 14px;
+    letter-spacing: 0.5px;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  .error-msg {
+    text-align: center;
+    font-size: 11px;
+    color: var(--red);
+    font-family: 'Space Mono', monospace;
+    padding: 6px;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+</style>
+</head>
+<body>
+
+<h1>CRYPTO TRACKER</h1>
+<div class="subtitle"><span class="pulse"></span> LIVE PRICES · AUTO REFRESH 30s</div>
+
+<div class="coins-grid" id="coins-grid"></div>
+<div class="error-msg" id="error-msg"></div>
+
+<div class="summary">
+  <div class="summary-title">Portfolio Summary</div>
+  <div class="summary-grid">
+    <div class="sum-item">
+      <div class="sum-label">Total Invested</div>
+      <div class="sum-val" id="s-invested">$0.00</div>
+    </div>
+    <div class="sum-item">
+      <div class="sum-label">Total Value</div>
+      <div class="sum-val" id="s-value">$0.00</div>
+    </div>
+    <div class="sum-item">
+      <div class="sum-label">Total P&L</div>
+      <div class="sum-val" id="s-pnl">$0.00</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer" id="last-updated">Fetching prices...</div>
+
+<script>
+const COINS = [
+  { id: 'sui',           ticker: 'SUI',  name: 'Sui',        color: '#4da2ff', bg: 'rgba(77,162,255,0.2)' },
+  { id: 'sei-network',   ticker: 'SEI',  name: 'Sei',        color: '#9b5de5', bg: 'rgba(155,93,229,0.2)' },
+  { id: 'render-token',  ticker: 'RNDR', name: 'Render',     color: '#f72585', bg: 'rgba(247,37,133,0.2)' },
+  { id: 'filecoin',      ticker: 'FIL',  name: 'Filecoin',   color: '#06d6a0', bg: 'rgba(6,214,160,0.2)'  },
+  { id: 'fetch-ai',      ticker: 'FET',  name: 'Fetch.ai',   color: '#ffd60a', bg: 'rgba(255,214,10,0.2)' },
+];
+
+const prices = {};
+const changes = {};
+const prevPrices = {};
+
+// Build UI
+const grid = document.getElementById('coins-grid');
+COINS.forEach(coin => {
+  const card = document.createElement('div');
+  card.className = 'coin-card';
+  card.id = `card-${coin.id}`;
+  card.style.setProperty('--accent', coin.color);
+  card.innerHTML = `
+    <div class="coin-header">
+      <div class="coin-identity">
+        <div class="coin-dot" style="background:${coin.bg};color:${coin.color}">${coin.ticker}</div>
+        <div class="coin-name-block">
+          <div class="ticker">${coin.ticker}</div>
+          <div class="fullname">${coin.name}</div>
+        </div>
+      </div>
+      <div class="price-block">
+        <div class="price-val" id="price-${coin.id}">—</div>
+        <div class="change-pill neutral" id="pill-${coin.id}">— %</div>
+      </div>
+    </div>
+    <div class="coin-inputs">
+      <div class="input-cell">
+        <label for="usd-${coin.id}">Invested (USD)</label>
+        <div class="input-wrap">
+          <span class="input-prefix">$</span>
+          <input type="number" id="usd-${coin.id}" placeholder="0.00" min="0" step="0.01" oninput="recalc();saveData()">
+        </div>
+      </div>
+      <div class="input-cell">
+        <label for="qty-${coin.id}">Quantity Held</label>
+        <div class="input-wrap">
+          <span class="input-prefix" style="color:${coin.color};font-size:10px">◈</span>
+          <input type="number" id="qty-${coin.id}" placeholder="0.00" min="0" step="0.01" oninput="recalc();saveData()">
+        </div>
+      </div>
+    </div>
+    <div class="coin-stats">
+      <div class="stat">
+        <div class="stat-label">Value</div>
+        <div class="stat-val" id="val-${coin.id}">$0.00</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">P&L</div>
+        <div class="stat-val" id="pnl-${coin.id}">$0.00</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">P&L %</div>
+        <div class="stat-val" id="pnlpct-${coin.id}">0.00%</div>
+      </div>
+    </div>
+  `;
+  grid.appendChild(card);
+});
+
+const STORAGE_KEY = 'crypto_tracker_data';
+
+function saveData() {
+  const data = {};
+  COINS.forEach(coin => {
+    data[coin.id] = {
+      usd: document.getElementById(`usd-${coin.id}`).value,
+      qty: document.getElementById(`qty-${coin.id}`).value,
+    };
+  });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    COINS.forEach(coin => {
+      if (data[coin.id]) {
+        const usdEl = document.getElementById(`usd-${coin.id}`);
+        const qtyEl = document.getElementById(`qty-${coin.id}`);
+        if (data[coin.id].usd) usdEl.value = data[coin.id].usd;
+        if (data[coin.id].qty) qtyEl.value = data[coin.id].qty;
+      }
+    });
+  } catch(e) {}
+}
+
+async function fetchPrices() {
+  try {
+    const ids = COINS.map(c => c.id).join(',');
+    const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`);
+    const data = await res.json();
+
+    COINS.forEach(coin => {
+      if (!data[coin.id]) return;
+      const newPrice = data[coin.id].usd;
+      const change   = data[coin.id].usd_24h_change;
+
+      // Flash
+      const priceEl = document.getElementById(`price-${coin.id}`);
+      if (prices[coin.id] !== undefined) {
+        priceEl.classList.remove('flash-up','flash-down');
+        void priceEl.offsetWidth;
+        priceEl.classList.add(newPrice >= prices[coin.id] ? 'flash-up' : 'flash-down');
+        setTimeout(() => priceEl.classList.remove('flash-up','flash-down'), 600);
+      }
+
+      prices[coin.id]  = newPrice;
+      changes[coin.id] = change;
+
+      // Price display
+      priceEl.textContent = '$' + (newPrice >= 1 ? newPrice.toFixed(4) : newPrice.toFixed(5));
+
+      // Change pill
+      const pill = document.getElementById(`pill-${coin.id}`);
+      pill.className = 'change-pill ' + (change >= 0 ? 'positive' : 'negative');
+      pill.textContent = (change >= 0 ? '▲ ' : '▼ ') + Math.abs(change).toFixed(2) + '%';
+    });
+
+    document.getElementById('error-msg').textContent = '';
+    document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    recalc();
+  } catch(e) {
+    document.getElementById('error-msg').textContent = 'Could not fetch prices. Retrying...';
+  }
+}
+
+function fmt(n) {
+  return (n < 0 ? '-' : '') + '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function recalc() {
+  let totalInvested = 0, totalValue = 0;
+
+  COINS.forEach(coin => {
+    const invested = parseFloat(document.getElementById(`usd-${coin.id}`).value) || 0;
+    const qty      = parseFloat(document.getElementById(`qty-${coin.id}`).value) || 0;
+    const price    = prices[coin.id] || 0;
+
+    const value  = qty * price;
+    const pnl    = value - invested;
+    const pnlPct = invested > 0 ? (pnl / invested) * 100 : 0;
+
+    document.getElementById(`val-${coin.id}`).textContent = '$' + value.toFixed(2);
+
+    const pnlEl = document.getElementById(`pnl-${coin.id}`);
+    pnlEl.textContent = fmt(pnl);
+    pnlEl.className = 'stat-val ' + (pnl > 0 ? 'green' : pnl < 0 ? 'red' : '');
+
+    const pctEl = document.getElementById(`pnlpct-${coin.id}`);
+    pctEl.textContent = (pnlPct >= 0 ? '+' : '') + pnlPct.toFixed(2) + '%';
+    pctEl.className = 'stat-val ' + (pnlPct > 0 ? 'green' : pnlPct < 0 ? 'red' : '');
+
+    totalInvested += invested;
+    totalValue    += value;
+  });
+
+  const totalPnl = totalValue - totalInvested;
+  document.getElementById('s-invested').textContent = '$' + totalInvested.toFixed(2);
+  document.getElementById('s-value').textContent    = '$' + totalValue.toFixed(2);
+
+  const spnl = document.getElementById('s-pnl');
+  spnl.textContent = fmt(totalPnl);
+  spnl.className = 'sum-val ' + (totalPnl > 0 ? 'green' : totalPnl < 0 ? 'red' : '');
+}
+
+loadData();
+fetchPrices();
+setInterval(fetchPrices, 30000);
+</script>
+</body>
+</html>
