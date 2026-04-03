@@ -492,6 +492,7 @@ async function fetchPrices() {
     recalc();
   } catch(e) {
     document.getElementById('error-msg').textContent = 'Could not fetch prices. Retrying...';
+    setTimeout(fetchPrices, 5000);
   }
 }
 
@@ -536,7 +537,7 @@ function recalc() {
 
 loadData();
 fetchPrices();
-setInterval(fetchPrices, 10000);
+setInterval(fetchPrices, 20000);
 </script>
 </body>
 </html>
